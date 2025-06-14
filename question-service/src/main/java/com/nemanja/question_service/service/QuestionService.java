@@ -3,6 +3,7 @@ package com.nemanja.question_service.service;
 import com.nemanja.question_service.dao.QuestionDao;
 import com.nemanja.question_service.model.Question;
 import com.nemanja.question_service.model.QuestionWrapper;
+import com.nemanja.question_service.model.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -95,5 +96,17 @@ public class QuestionService {
         }
 
         return new ResponseEntity<>(wrappers, HttpStatus.OK);
+    }
+
+    public ResponseEntity<Integer> getScore(List<Response> responses) {
+        int score = 0;
+
+        for (Response r : responses) {
+            Question question = questionDao.findById(r.getId()).get();
+            if(r.getResponse().equals(question.getRightAnswer()))
+                score++;
+        }
+
+        return new ResponseEntity<>(score, HttpStatus.OK);
     }
 }

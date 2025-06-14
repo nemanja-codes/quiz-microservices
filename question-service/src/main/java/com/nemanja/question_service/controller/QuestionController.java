@@ -2,6 +2,7 @@ package com.nemanja.question_service.controller;
 
 import com.nemanja.question_service.model.Question;
 import com.nemanja.question_service.model.QuestionWrapper;
+import com.nemanja.question_service.model.Response;
 import com.nemanja.question_service.service.QuestionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -52,6 +53,9 @@ public class QuestionController {
         return questionService.getQuestionsFromId(questionsIds);
     }
 
-
+    @PostMapping("/getScore")
+    public ResponseEntity<Integer> getScore(@RequestBody List<Response> responses) {
+        return questionService.getScore(responses);
+    }
 
 }
