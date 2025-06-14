@@ -2,6 +2,7 @@ package com.nemanja.question_service.service;
 
 import com.nemanja.question_service.dao.QuestionDao;
 import com.nemanja.question_service.model.Question;
+import com.nemanja.question_service.model.QuestionWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -68,5 +69,31 @@ public class QuestionService {
         }
     }
 
+    public ResponseEntity<List<Integer>> getQuestionsForQuiz(String categoryName, Integer numQuestions) {
+        List<Integer> questions = questionDao.findRandomQuestionsByCategory(categoryName, numQuestions);
+        return new ResponseEntity<>(questions, HttpStatus.OK);
+    }
 
+    public ResponseEntity<List<QuestionWrapper>> getQuestionsFromId(List<Integer> questionsIds) {
+        List<QuestionWrapper> wrappers = new ArrayList<>();
+        List<Question> questions = new ArrayList<>();
+
+        for(Integer id : questionsIds) {
+            questions.add(questionDao.findById(id).get());
+        }
+
+        for(Question q : questions) {
+            QuestionWrapper wrapper = new QuestionWrapper();
+            wrapper.setId(q.getId());
+            wrapper.setQuestionTitle(q.getQuestionTitle());
+            wrapper.setOption1(q.getOption1());
+            wrapper.setOption2(q.getOption2());
+            wrapper.setOption3(q.getOption3());
+            wrapper.setOption4(q.getOption4());
+
+            wrappers.add(wrapper);
+        }
+
+        return new ResponseEntity<>(wrappers, HttpStatus.OK);
+    }
 }
