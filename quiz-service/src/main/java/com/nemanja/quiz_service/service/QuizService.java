@@ -1,14 +1,15 @@
 package com.nemanja.quiz_service.service;
 
 import com.nemanja.quiz_service.dao.QuizDao;
+import com.nemanja.quiz_service.feign.QuizInterface;
 import com.nemanja.quiz_service.model.QuestionWrapper;
+import com.nemanja.quiz_service.model.Quiz;
 import com.nemanja.quiz_service.model.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -18,45 +19,32 @@ public class QuizService {
     QuizDao quizDao;
 //    @Autowired
 //    QuestionDao questionDao;
+    @Autowired
+    QuizInterface quizInterface;
 
 
     public ResponseEntity<String> createQuiz(String category, int numQ, String title) {
-        List<Integer> questions = questionDao.findRandomQuestionsByCategory(category, numQ);
-//
-//        Quiz quiz = new Quiz();
-//        quiz.setTitle(title);
-//        quiz.setQuestions(questions);
-//
-//        quizDao.save(quiz);
+        List<Integer> questions = quizInterface.getQuestionsForQuiz(category, numQ).getBody();
+        Quiz quiz = new Quiz();
+        quiz.setTitle(title);
+        quiz.setQuestionIds(questions);
+
+        quizDao.save(quiz);
+
         return new ResponseEntity<>("Success", HttpStatus.CREATED);
     }
 
     public ResponseEntity<List<QuestionWrapper>> getQuizQuestions(Integer id) {
-//        Optional<Quiz> quiz = quizDao.findById(id);
-//        List<Question> questionsFromDB = quiz.get().getQuestions();
-        List<QuestionWrapper> questionsForUser = new ArrayList<>();
+        Quiz quiz = quizDao.findById(id).get();
+        List<Integer> questionIds = quiz.getQuestionIds();
+        List<QuestionWrapper> questions = quizInterface.getQuestionsFromId(questionIds).getBody();
 
-//        for(Question q : questionsFromDB) {
-//            QuestionWrapper qw = new QuestionWrapper(q.getId(),q.getQuestionTitle(),
-//                    q.getOption1(),q.getOption2(),q.getOption3(),q.getOption4());
-//            questionsForUser.add(qw);
-//        }
-
-        return new ResponseEntity<>(questionsForUser, HttpStatus.OK);
+        return new ResponseEntity<>(questions, HttpStatus.OK);
     }
 
-    public ResponseEntity<Integer> caculateResult(Integer id, List<Response> responses) {
-//        Optional<Quiz> quiz = quizDao.findById(id);
-//        List<Question> questions = quiz.get().getQuestions();
-        int score = 0;
-//        int i = 0;
-//
-//        for (Response r : responses) {
-//            if(r.getResponse().equals(questions.get(i).getRightAnswer()))
-//                score++;
-//            i++;
-//        }
+    public ResponseEntity<Integer> calculateResult(Integer id, List<Response> responses) {
+        ResponseEntity<Integer> score = quizInterface.getScore(responses);
 
-        return new ResponseEntity<>(score, HttpStatus.OK);
+        return score;
     }
 }
